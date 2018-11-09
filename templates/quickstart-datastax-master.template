@@ -27,6 +27,9 @@
                 "Instances",
                 "DCSizes",
                 "VolumeSizes",
+                "VolumeTypes",
+                "VolumeIops",
+                "RetainKey",
                 "ClusterName"
             ]
             }, {
@@ -80,6 +83,15 @@
                 },
                 "VolumeSizes": {
                     "default": "Volume Sizes"
+                },
+                "VolumeTypes": {
+                    "default": "Volume type, gp2/io1"
+                },
+                "VolumeIops": {
+                    "default": "Iops if using io1 volumes"
+                },
+                "RetainKey": {
+                    "default": "Retain Public SSH Key"
                 },
                 "QSS3BucketName": {
                     "default": "Quick Start S3 Bucket Name"
@@ -154,6 +166,25 @@
             "Description": "The EBS volume size, in GiB, for the nodes in each data center, separated by commas. The number of volume sizes in this array must match the NumberDCs parameter.",
             "Type": "List<Number>",
             "Default": "1024"
+        },
+        "VolumeTypes" : {
+          "Description": "The EBS volume type, either 'gp2' or 'io1', for the nodes in each data center, separated by commas. The number of volume types in this array must match the NumberDCs parameter.",
+          "Type": "List<String>",
+          "Default": "gp2",
+        },
+        "VolumeIops" : {
+          "Description": "The EBS volume iops, for the nodes in each data center, separated by commas. The number of volume iops in this array must match the NumberDCs parameter. Each value is used only if the corresponding value in 'VolumeTypes' is 'io1'",
+          "Type": "List<Number>",
+          "Default": "6000"
+        },
+        "RetainKey": {
+            "Description": "Retain generated SSH public key in S3 bucket to facilitate post deploy scaling. Note: setting to 'true' requires emptying bucket for clean teardown of stack.",
+            "Type": "String",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Default": "false",
         },
         "DCSizes": {
             "Description": "The number of nodes to create for each DSE data center, separated by commas. The number of sizes in this array must match the NumberDCs parameter.",
@@ -373,6 +404,13 @@
                 "CidrIp": {
                     "Ref": "AccessLocation"
                 }
+                },{
+                "IpProtocol": "tcp",
+                "FromPort": "8888",
+                "ToPort": "8888",
+                "CidrIp": {
+                    "Ref": "AccessLocation"
+                }
                 }, {
                 "IpProtocol": "tcp",
                 "FromPort": "8888",
@@ -456,6 +494,9 @@
                     "S3Bucket": {
                         "Ref": "S3Bucket"
                     },
+                    "RetainKey": {
+                        "Ref": "RetainKey"
+                    },
                     "InstanceType": "t2.medium"
                 }
             },
@@ -514,6 +555,16 @@
                     "VolumeSize": {
                         "Fn::Select": ["0", {
                             "Ref": "VolumeSizes"
+                        }]
+                    },
+                    "VolumeType": {
+                        "Fn::Select": ["0", {
+                            "Ref": "VolumeTypes"
+                        }]
+                    },
+                    "VolumeIops": {
+                        "Fn::Select": ["0", {
+                            "Ref": "VolumeIops"
                         }]
                     },
                     "VPC": {
@@ -596,6 +647,16 @@
                             "Ref": "VolumeSizes"
                         }]
                     },
+                    "VolumeType": {
+                        "Fn::Select": ["1", {
+                            "Ref": "VolumeTypes"
+                        }]
+                    },
+                    "VolumeIops": {
+                        "Fn::Select": ["1", {
+                            "Ref": "VolumeIops"
+                        }]
+                    },
                     "VPC": {
                         "Fn::GetAtt": ["VPCstack", "Outputs.VPCID"]
                     },
@@ -676,6 +737,16 @@
                             "Ref": "VolumeSizes"
                         }]
                     },
+                    "VolumeType": {
+                        "Fn::Select": ["2", {
+                            "Ref": "VolumeTypes"
+                        }]
+                    },
+                    "VolumeIops": {
+                        "Fn::Select": ["2", {
+                            "Ref": "VolumeIops"
+                        }]
+                    },
                     "VPC": {
                         "Fn::GetAtt": ["VPCstack", "Outputs.VPCID"]
                     },
@@ -754,6 +825,16 @@
                     "VolumeSize": {
                         "Fn::Select": ["3", {
                             "Ref": "VolumeSizes"
+                        }]
+                    },
+                    "VolumeType": {
+                        "Fn::Select": ["3", {
+                            "Ref": "VolumeTypes"
+                        }]
+                    },
+                    "VolumeIops": {
+                        "Fn::Select": ["3", {
+                            "Ref": "VolumeIops"
                         }]
                     },
                     "VPC": {

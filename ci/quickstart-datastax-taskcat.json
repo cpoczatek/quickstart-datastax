@@ -25,6 +25,12 @@
 }, {
   "ParameterKey": "VolumeSizes",
   "ParameterValue": "256,256,256,256"
+}, {
+  "ParameterKey": "VolumeTypes",
+  "ParameterValue": "io1,io1,gp2,gp2"
+}, {
+  "ParameterKey": "VolumeIops",
+  "ParameterValue": "10000,10000,100,100"
 },{
   "ParameterKey": "DCSizes",
   "ParameterValue": "5,4,3,2"
@@ -44,4 +50,3 @@
   "ParameterKey": "QSS3KeyPrefix",
   "ParameterValue": "quickstart-datastax/"
 }]
-

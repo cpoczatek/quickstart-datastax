@@ -59,6 +59,14 @@
             "Description": "S3Bucket for public key passing",
             "Type": "String"
         },
+        "RetainKey": {
+            "Description": "Retain generated SSH public key in S3 bucket to facilitate post deploy scaling. Note: setting to 'true' requires emptying bucket for clean teardown of stack.",
+            "Type": "String",
+            "AllowedValues": [
+                "true",
+                "false"
+            ]
+        },
         "InstanceType": {
             "Description": "Node EC2 instance type",
             "Type": "String",
@@ -70,6 +78,9 @@
             ],
             "ConstraintDescription": "must be a valid EC2 instance type."
         }
+    },
+    "Conditions": {
+      "RetainKey" : {"Fn::Equals": ["true",{"Ref": "RetainKey"}]}
     },
     "Mappings": {
         "AWSAMIRegionMap": {
@@ -217,8 +228,8 @@
                                             "#!/usr/bin/env bash -e \n",
                                             "cloud_type=\"aws\" \n",
                                             "cd ~ubuntu \n",
-                                            "release=\"7.1.0\" \n",
-                                            "export OPSC_VERSION='6.5.2' \n",
+                                            "release=\"7.2.0\" \n",
+                                            "export OPSC_VERSION='6.5.3' \n",
                                             "wget https://github.com/DSPN/install-datastax-ubuntu/archive/$release.tar.gz \n",
                                             "tar -xvf $release.tar.gz \n",
                                             "cd install-datastax-ubuntu-$release/bin \n",
@@ -273,7 +284,7 @@
                                         [
                                             "#!/usr/bin/env bash -e \n",
                                             "cd ~ubuntu \n",
-                                            "release=\"7.1.0\" \n",
+                                            "release=\"7.2.0\" \n",
                                             "cd install-datastax-ubuntu-$release/bin \n",
                                             "privkey=$(readlink -f ~ubuntu/.ssh/lcm.pem) \n",
                                             "sleep 1m \n",
@@ -328,7 +339,7 @@
                                         [
                                             "#!/usr/bin/env bash -e \n",
                                             "echo 'Post install/setup actions...' \n",
-                                            "release=\"7.1.0\" \n",
+                                            "release=\"7.2.0\" \n",
                                             "/usr/local/bin/cfn-signal -e 0 -r \"OpsCenter Setup Complete\" \"",
                                             {
                                                 "Ref": "OpsCenterWaitHandle"
@@ -377,17 +388,27 @@
                                                 "Ref": "OpsCPassword"
                                             },
                                             "' \n",
-                                            "echo 'Removing lcm.pem.pub from bucket...' \n",
-                                            "aws s3 rm s3://",
                                             {
-                                                "Ref": "S3Bucket"
-                                            },
-                                            "/lcm.pem.pub --region ",
-                                            {
-                                                "Ref": "AWS::Region"
-                                            },
-                                            " \n"
-                                        ]
+                                              "Fn::If": [
+                                                "RetainKey",
+                                                "echo 'RetainKey 'true', not emptying bucket...' \n",
+                                                {
+                                                "Fn::Join": ["", [
+                                                  "echo 'Removing lcm.pem.pub from bucket...' \n",
+                                                  "aws s3 rm s3://",
+                                                  {
+                                                      "Ref": "S3Bucket"
+                                                  },
+                                                  "/lcm.pem.pub --region ",
+                                                  {
+                                                      "Ref": "AWS::Region"
+                                                  },
+                                                  " \n"]
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                      ]
                                     ]
                                 }
                             }

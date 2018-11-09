@@ -65,6 +65,20 @@
             "Description": "EBS volume size in GB",
             "Default": "1024"
         },
+        "VolumeType" : {
+          "Type": "String",
+          "Description": "EBS volume type",
+          "Default": "gp2",
+          "AllowedValues": [
+              "gp2",
+              "io1"
+          ],
+        },
+        "VolumeIops" : {
+          "Type": "Number",
+          "Description": "EBS volume iops if using io1, ignored otherwise",
+          "Default": "6000"
+        },
         "SecurityCIDR": {
             "Description": "The IP address range covering node instances",
             "Type": "String",
@@ -272,8 +286,8 @@
                                             "sleep 15s \n",
                                             "done \n",
                                             "cat .ssh/lcm.pem.pub >> .ssh/authorized_keys \n",
-                                            "release=\"7.1.0\" \n",
-                                            "export OPSC_VERSION='6.5.2' \n",
+                                            "release=\"7.2.0\" \n",
+                                            "export OPSC_VERSION='6.5.3' \n",
                                             "wget https://github.com/DSPN/install-datastax-ubuntu/archive/$release.tar.gz \n",
                                             "tar -xvf $release.tar.gz \n",
                                             "cd install-datastax-ubuntu-$release/bin \n",
@@ -353,9 +367,14 @@
                     {
                         "DeviceName": "/dev/xvdf",
                         "Ebs": {
-                            "VolumeType": "gp2",
+                            "VolumeType": {
+                              "Ref": "VolumeType"
+                            },
                             "VolumeSize": {
                                 "Ref": "VolumeSize"
+                            },
+                            "Iops": {
+                              "Ref": "VolumeIops"
                             }
                         }
                     }
